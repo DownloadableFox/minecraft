@@ -17,6 +17,7 @@ include_directories(src)
 add_executable(minecraft 
     src/main.cpp
     src/world.cpp
+    src/generation.cpp
     
     # Renderer
     src/renderer/buffers.cpp
@@ -26,11 +27,10 @@ add_executable(minecraft
     src/renderer/models.cpp
 )
 
-# Add compile flags
-# if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-#     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
-# endif()
+# Set debug flags
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+endif()
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
@@ -44,5 +44,8 @@ add_subdirectory(glad)
 # Compile GLM
 add_subdirectory(glm)
 
+# Add lua 
+add_subdirectory(lua)
+
 # Link libraries
-target_link_libraries(minecraft glfw glad glm-header-only ${OPENGL_LIBRARIES})
+target_link_libraries(minecraft glfw glad glm-header-only lua ${OPENGL_LIBRARIES})

@@ -5,6 +5,18 @@
 #include <stb/stb_image.h>
 
 namespace render {
+	Texture::Texture(int width, int height, ComponentType type) {
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		/* Set texture parameters */
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		/* Allocate texture with no data */
+		glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLenum>(type), width, height, 0, static_cast<GLenum>(type), (type == ComponentType::DEPTH ? GL_FLOAT : GL_UNSIGNED_INT), nullptr);
+	}
+
 	Texture::Texture(const std::filesystem::path& path) : m_RendererID(0) {
 		stbi_set_flip_vertically_on_load(true);
 
@@ -74,6 +86,33 @@ namespace render {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+	void Texture::SetData(const std::filesystem::path& path) {
+		stbi_set_flip_vertically_on_load(true);
+
+		/* Load texture */
+		unsigned char* data = stbi_load(path.string().c_str(), &m_Width, &m_Height, &m_Channels, 0);
+		if (!data) {
+			std::cerr << "Failed to load texture: " << path << std::endl;
+			return;
+		}
+
+		/* Bind texture */
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		/* Set texture parameters */
+		GLenum format = GL_RGB;
+		if (m_Channels == 4) {
+			format = GL_RGBA;
+		}
+
+		/* Upload texture */
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, data);
+
+		/* Generate mipmaps */
+		stbi_image_free(data);
+	}
+
+
 	void Texture::SetWrapMode(WrapMode mode) {
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLenum>(mode));
@@ -86,8 +125,14 @@ namespace render {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLenum>(mag));
 	}
 
-	void Texture::GenerateMipmaps() {
+	void Texture::GenerateMipmaps(unsigned int levels) {
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		/* Set levels */
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, levels);
+
+		/* Generate mipmaps */
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 

@@ -51,6 +51,9 @@ namespace render {
 		/* Bind VAO */
 		m_VAO.Bind();
 
+		/* Bind program */
+		program.Bind();
+
 		/* Draw */
 		glDrawElements(GL_TRIANGLES, m_EBO.GetCount(), GL_UNSIGNED_INT, nullptr);
 	}

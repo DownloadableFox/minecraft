@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <vector>
+#include <stdexcept>
 
 #include "buffers.h"
 

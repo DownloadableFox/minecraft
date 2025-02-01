@@ -1,7 +1,8 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "textures.h"
 
+#include <glad/glad.h>
 #include <vector>
 
 namespace render {
@@ -71,5 +72,63 @@ namespace render {
 
         /* Get count */
         size_t GetCount() const;
+    };
+
+    class RenderBuffer {
+    private:
+        unsigned int m_RendererID;
+        int m_Width, m_Height;
+
+    public:
+        RenderBuffer(int width, int height);
+        ~RenderBuffer();
+
+        /* Disable copying */
+        RenderBuffer(const RenderBuffer&) = delete;
+        RenderBuffer& operator=(const RenderBuffer&) = delete;
+
+        /* Enable moving */
+        RenderBuffer(RenderBuffer&& other) noexcept;
+        RenderBuffer& operator=(RenderBuffer&& other) noexcept;
+
+        /* Bind and unbind */
+        void Bind() const;
+        void Unbind() const;
+
+        /* Get renderer ID */
+        inline unsigned int GetRendererID() const { return m_RendererID; }
+    };
+
+    class FrameBuffer {
+    private:
+        unsigned int m_RendererID;
+
+    public:
+        FrameBuffer();
+        ~FrameBuffer();
+
+        /* Disable copying */
+        FrameBuffer(const FrameBuffer&) = delete;
+        FrameBuffer& operator=(const FrameBuffer&) = delete;
+
+        /* Enable moving */
+        FrameBuffer(FrameBuffer&& other) noexcept;
+        FrameBuffer& operator=(FrameBuffer&& other) noexcept;
+
+        /* Bind and unbind */
+        void Bind() const;
+        void Unbind() const;
+
+        /* Check if complete */
+        bool IsComplete() const;
+
+        /* Set viewport */
+        void SetViewport(int width, int height);
+
+        /* Attach texture */
+        void AttachTexture(std::shared_ptr<Texture> texture);
+
+        /* Attach render buffer */
+        void AttachBuffer(const RenderBuffer& buffer);
     };
 };

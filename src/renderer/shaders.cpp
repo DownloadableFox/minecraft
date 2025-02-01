@@ -184,6 +184,13 @@ namespace render {
 		return location;
 	}
 
+	void ShaderProgram::SetUniform2f(const std::string& name, float v0, float v1) {
+		Bind();
+
+		int location = GetUniformLocation(name);
+		glUniform2f(location, v0, v1);
+	}
+
 	void ShaderProgram::SetUniformMat4f(const std::string& name, glm::mat4 matrix) {
 		Bind();
 

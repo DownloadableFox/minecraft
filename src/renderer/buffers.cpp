@@ -124,4 +124,110 @@ namespace render {
     size_t ElementBuffer::GetCount() const {
         return m_Count;
     }
+
+    FrameBuffer::FrameBuffer() {
+        glGenFramebuffers(1, &m_RendererID);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+    }
+
+    FrameBuffer::~FrameBuffer() {
+        if (m_RendererID) {
+            glDeleteFramebuffers(1, &m_RendererID);
+        }
+    }
+
+    FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept {
+        m_RendererID = other.m_RendererID;
+        other.m_RendererID = 0;
+    }
+
+    FrameBuffer& FrameBuffer::operator=(FrameBuffer&& other) noexcept {
+        if (this != &other) {
+            if (m_RendererID) {
+                glDeleteFramebuffers(1, &m_RendererID);
+            }
+
+            m_RendererID = other.m_RendererID;
+            other.m_RendererID = 0;
+        }
+
+        return *this;
+    }
+
+    void FrameBuffer::Bind() const {
+        if (m_RendererID) {
+            glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+        } else {
+            std::cerr << "Attempted to bind a moved frame buffer" << std::endl;
+        }
+    }
+
+    void FrameBuffer::Unbind() const {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    bool FrameBuffer::IsComplete() const {
+        this->Bind();
+        return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+    }
+
+    void FrameBuffer::SetViewport(int width, int height) {
+        glViewport(0, 0, width, height);
+    }
+
+    void FrameBuffer::AttachTexture(std::shared_ptr<Texture> texture) {
+        this->Bind();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->GetRendererID(), 0);
+    }
+
+    void FrameBuffer::AttachBuffer(const RenderBuffer& buffer) {
+        this->Bind();
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer.GetRendererID());
+    }
+
+    RenderBuffer::RenderBuffer(int width, int height) {
+        glGenRenderbuffers(1, &m_RendererID);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    }
+
+    RenderBuffer::~RenderBuffer() {
+        if (m_RendererID) {
+            glDeleteRenderbuffers(1, &m_RendererID);
+        }
+    }
+
+    RenderBuffer::RenderBuffer(RenderBuffer&& other) noexcept {
+        m_RendererID = other.m_RendererID;
+        m_Width = other.m_Width;
+        m_Height = other.m_Height;
+        other.m_RendererID = 0;
+    }
+
+    RenderBuffer& RenderBuffer::operator=(RenderBuffer&& other) noexcept {
+        if (this != &other) {
+            if (m_RendererID) {
+                glDeleteRenderbuffers(1, &m_RendererID);
+            }
+
+            m_RendererID = other.m_RendererID;
+            m_Width = other.m_Width;
+            m_Height = other.m_Height;
+            other.m_RendererID = 0;
+        }
+
+        return *this;
+    }
+
+    void RenderBuffer::Bind() const {
+        if (m_RendererID) {
+            glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
+        } else {
+            std::cerr << "Attempted to bind a moved depth buffer" << std::endl;
+        }
+    }
+
+    void RenderBuffer::Unbind() const {
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
 };

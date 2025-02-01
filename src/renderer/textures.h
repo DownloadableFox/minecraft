@@ -7,6 +7,12 @@
 #include <glm/glm.hpp>
 
 namespace render {
+	enum class ComponentType {
+		RGB = GL_RGB,
+		RGBA = GL_RGBA,
+		DEPTH = GL_DEPTH_COMPONENT
+	};
+
 	enum class WrapMode {
 		REPEAT = GL_REPEAT,
 		MIRRORED_REPEAT = GL_MIRRORED_REPEAT,
@@ -32,6 +38,7 @@ namespace render {
 		unsigned int m_RendererID;
 		int m_Width, m_Height, m_Channels;
 	public:
+		Texture(int width, int height, ComponentType type = ComponentType::RGB);
 		Texture(const std::filesystem::path& path);
 		~Texture();
 
@@ -43,16 +50,22 @@ namespace render {
 		Texture(Texture&& other) noexcept;
 		Texture& operator=(Texture&& other) noexcept;
 
+		/* Get renderer ID */
+		inline unsigned int GetRendererID() const { return m_RendererID; }
+
 		/* Bind and unbind */
 		void Bind(unsigned int slot = 0) const;
 		void Unbind() const;
+
+		/* Set data */
+		void SetData(const std::filesystem::path& path);
 
 		/* Wrap and filter modes */
 		void SetWrapMode(WrapMode mode);
 		void SetFilterMode(FilterMode min, FilterMode mag);
 
 		/* Mipmaps */
-		void GenerateMipmaps();
+		void GenerateMipmaps(unsigned int levels = 4);
 
 		/* Atlas */
 		TextureCoords GetTextureCoords(int index, int count) const;
