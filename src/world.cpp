@@ -99,6 +99,13 @@ BlockType GetBlockType(const std::vector<BlockType>& blocks, int x, int y, int z
 	return blocks[index];
 }
 
+std::pair<glm::ivec2, glm::ivec3> GlobalToChunkPosition(glm::vec3 position, int width, int height, int depth) {
+	glm::ivec2 chunk = glm::ivec2(floor(position.x / width), floor(position.z / depth));
+	glm::ivec3 block = glm::ivec3(static_cast<int>(position.x) - chunk.x * width, position.y, static_cast<int>(position.z) - chunk.y * depth);
+
+	return { chunk, block };
+}
+
 std::pair<std::vector<BlockVertex>, std::vector<unsigned int>> CreateBlockFace(std::shared_ptr<render::Texture> terrain, BlockType type, BlockFace face, glm::vec3 position, glm::vec3 normal) {
 	std::vector<BlockVertex> vertices;
 	std::vector<unsigned int> indices;
@@ -297,4 +304,39 @@ render::Mesh CreateChunkMesh(std::shared_ptr<render::Texture> terrain, const std
 
 	/* Create mesh */
 	return render::Mesh(layout, vertices, indices, { terrain });
+}
+
+
+bool Raycast(const WorldSettings& settings, const std::vector<std::tuple<glm::ivec2, Chunk>>& chunks, glm::vec3 position, glm::vec3 direction, float distance, RaycastResult& result) {
+	/* Raycast */
+	for (float i = 0; i < distance; i += 0.1f) {
+		glm::vec3 check = position + direction * i;
+
+		auto [current_chunk, current_block] = GlobalToChunkPosition(check, settings.chunk_width, settings.chunk_height, settings.chunk_depth);
+		for (const auto& [position, chunk] : chunks) {
+			if (position.x == current_chunk.x && position.y == current_chunk.y) {
+				/* Get block type */
+				const std::vector<BlockType>& blocks = chunk.GetBlocks();
+	
+				/* Check block type */
+				BlockType type = GetBlockType(blocks, current_block.x, current_block.y, current_block.z, settings.chunk_width, settings.chunk_height, settings.chunk_depth);
+				
+				/*
+				std::cout 
+					<< "Chunk: " << position.x << ", " << position.y << " - "
+					<< "Block: " << current_block.x << ", " << current_block.y << ", " << current_block.z 
+					<< " = " << BlockTypeToString(type) << std::endl;
+				*/
+
+				if (type != BlockType::AIR) {
+					result.position = check;
+					result.normal = glm::vec3(0.0f, 0.0f, 0.0f);
+					result.type = type;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }

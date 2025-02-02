@@ -42,7 +42,16 @@ namespace render {
 		return *this;
 	}
 
-	void Mesh::Draw(const ShaderProgram& program) const {
+	void Mesh::SetTextures(const std::vector<std::shared_ptr<Texture>>& textures) {
+		m_Textures = textures;
+	}
+
+	void Mesh::Draw(ShaderProgram& program) const {
+		const static int textures[] = {
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 
+			9, 10, 11, 12, 13, 15, 16
+		};
+
 		/* Bind textures */
 		for (size_t i = 0; i < m_Textures.size(); i++) {
 			m_Textures[i]->Bind(static_cast<unsigned int>(i));
@@ -53,6 +62,7 @@ namespace render {
 
 		/* Bind program */
 		program.Bind();
+		program.SetUniform1iv("u_Texture", m_Textures.size(), textures);
 
 		/* Draw */
 		glDrawElements(GL_TRIANGLES, m_EBO.GetCount(), GL_UNSIGNED_INT, nullptr);

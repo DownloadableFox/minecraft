@@ -54,6 +54,9 @@ namespace render {
 		Mesh(Mesh&& other) noexcept;
 		Mesh& operator=(Mesh&& other) noexcept;
 
-		void Draw(const ShaderProgram& program) const;
+		/* Set textures */
+		void SetTextures(const std::vector<std::shared_ptr<Texture>>& textures);
+
+		void Draw(ShaderProgram& program) const;
 	};
 };

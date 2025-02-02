@@ -38,7 +38,8 @@ namespace render {
 		unsigned int m_RendererID;
 		int m_Width, m_Height, m_Channels;
 	public:
-		Texture(int width, int height, ComponentType type = ComponentType::RGB);
+		Texture();
+		Texture(int width, int height, const void* data, ComponentType type);
 		Texture(const std::filesystem::path& path);
 		~Texture();
 
@@ -59,6 +60,7 @@ namespace render {
 
 		/* Set data */
 		void SetData(const std::filesystem::path& path);
+		void SetData(int width, int height, const void* data, ComponentType type);
 
 		/* Wrap and filter modes */
 		void SetWrapMode(WrapMode mode);

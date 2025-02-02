@@ -184,6 +184,14 @@ namespace render {
 		return location;
 	}
 
+	void ShaderProgram::SetUniform1iv(const std::string& name, int count, const int* value) {
+		Bind();
+
+		int location = GetUniformLocation(name);
+		glUniform1iv(location, count, value);
+	}
+
+
 	void ShaderProgram::SetUniform2f(const std::string& name, float v0, float v1) {
 		Bind();
 

@@ -5,16 +5,21 @@
 #include <stb/stb_image.h>
 
 namespace render {
-	Texture::Texture(int width, int height, ComponentType type) {
+	Texture::Texture() {
 		glGenTextures(1, &m_RendererID);
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
-		/* Set texture parameters */
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 		/* Allocate texture with no data */
-		glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLenum>(type), width, height, 0, static_cast<GLenum>(type), (type == ComponentType::DEPTH ? GL_FLOAT : GL_UNSIGNED_INT), nullptr);
+		// glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLenum>(type), width, height, 0, static_cast<GLenum>(type), (type == ComponentType::DEPTH ? GL_FLOAT : GL_UNSIGNED_INT), nullptr);
+	}
+
+	Texture::Texture(int width, int height, const void* data, ComponentType type) {
+		/* Generate texture */
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		/* Upload texture */
+		glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLenum>(type), width, height, 0, static_cast<GLenum>(type), GL_UNSIGNED_BYTE, data);
 	}
 
 	Texture::Texture(const std::filesystem::path& path) : m_RendererID(0) {
@@ -112,6 +117,12 @@ namespace render {
 		stbi_image_free(data);
 	}
 
+	void Texture::SetData(int width, int height, const void* data, ComponentType type) {
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		/* Upload texture */
+		glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLenum>(type), width, height, 0, static_cast<GLenum>(type), (type == ComponentType::DEPTH ? GL_FLOAT : GL_UNSIGNED_INT), data);
+	}
 
 	void Texture::SetWrapMode(WrapMode mode) {
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
